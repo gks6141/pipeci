@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-phpfpm
+  labels:
+    app: nginx-phpfpm
+  namespace: testci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-phpfpm
+  template:
+    metadata:
+      labels:
+        app: nginx-phpfpm
+    spec:
+      volumes:
+        - name: shared-files
+          emptyDir: {}
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          volumeMounts:
+            - name: shared-files
+              mountPath: /var/www/html
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+        - name: php-fpm-container
+          image: php:7.0-fpm
+          volumeMounts:
+            - name: shared-files
+              mountPath: /var/www/html
